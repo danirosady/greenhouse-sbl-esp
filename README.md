@@ -47,9 +47,7 @@ To set up the Smart Greenhouse IoT system, follow the steps below:
 
 2. **Clone the Repository**:
    Clone the project repository to your local machine:
-   ```bash
-   git clone https://github.com/your-username/smart-greenhouse.git
-   cd smart-greenhouse
+
 3. Install Required Libraries: In the Arduino IDE, go to Sketch > Include Library > Manage Libraries and install the following libraries:
 
 PubSubClient for MQTT
@@ -57,12 +55,12 @@ ModbusMaster for RS485 communication (if needed)
 DHT for temperature and humidity sensor (or any other sensor library you're using)
 
 4. Configure the MQTT Broker: Set up an MQTT broker (either locally or using a cloud service) and configure the credentials in your code. Example configuration in Arduino IDE:
-
+```bash
 const char* mqttServer = "broker_address";
 const int mqttPort = 1883;
 const char* mqttUser = "username";
 const char* mqttPassword = "password";
-
+```
 5. Upload the Code: Open the project in Arduino IDE, select the correct ESP32 board, and upload the code to your ESP32 device.
 
 6. Connect the Hardware:
