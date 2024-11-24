@@ -1,18 +1,16 @@
-#include <Arduino.h>
-
-// put function declarations here:
-int myFunction(int, int);
+#include <ArduinoOTA.h>
+#include <WiFi.h>
+#include "secret.h"
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+  ArduinoOTA.setPassword(auth);
+  ArduinoOTA.begin();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  ArduinoOTA.handle();
 }
