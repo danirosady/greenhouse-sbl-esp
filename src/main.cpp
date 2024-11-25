@@ -1,6 +1,9 @@
 #include <ArduinoOTA.h>
-#include <WiFi.h>
+#include <WiFiManager.h> 
 #include "secret.h"
+
+WiFiManager wm;             // Inisialisasi WifiManager
+int timeout_hotspot = 120;
 
 #define RESTART_PIN 12
 #define LED_PIN_A 13
@@ -13,12 +16,12 @@ unsigned long lastButtonPressTime = 0;
 bool ledBState = LOW;
 
 unsigned long lastBlinkTime = 0;
-unsigned long blinkInterval = 500;
+unsigned long blinkInterval = 1000;
 
 void setupCompleteCallback() {
-  digitalWrite(13, HIGH);
+  digitalWrite(LED_PIN_A, HIGH);
   delay(100);
-  digitalWrite(13, LOW);
+  digitalWrite(LED_PIN_A, LOW);
   delay(100);
 }
 
@@ -30,10 +33,28 @@ void IRAM_ATTR handleButtonPress() {
 }
 
 void setup() {
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  Serial.begin(115200);
+  bool res = wm.autoConnect(ssid, password); 
+  if (res) {
+    Serial.println("Terhubung... :)");
+    delay(100);
+  } else {
+    Serial.println("Gagal mengkoneksikan Wi-Fi");
+    delay(100);
+
+    wm.setConfigPortalTimeout(timeout_hotspot);
+    if (!wm.startConfigPortal(hotspot_ssid, hotspot_password)) {
+      Serial.println("Gagal mengkoneksikan Wi-Fi dan waktu habis");
+      delay(100);
+      ESP.restart();
+      delay(100);
+      Serial.println("Restarting");
+    } else {
+      Serial.println("Terhubung ke Wi-Fi setelah dikonfigurasi!");
+      delay(100);
+    }
   }
+
   ArduinoOTA.setPassword(auth);
   ArduinoOTA.begin();
   pinMode(LED_PIN_A, OUTPUT);
@@ -48,6 +69,13 @@ void setup() {
   }
 
 void loop() {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.print("Wi-Fi status: ");
+    Serial.println(WiFi.status());
+    Serial.println("Wi-Fi terputus, memulai config portal...");
+    wm.startConfigPortal(hotspot_ssid, hotspot_password);
+  }
+
   ArduinoOTA.handle();
 
   if (millis() - lastBlinkTime >= blinkInterval) {
