@@ -1,9 +1,19 @@
 #include <ArduinoOTA.h>
 #include <WiFiManager.h> 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 #include "secret.h"
 
-WiFiManager wm;             // Inisialisasi WifiManager
+WiFiManager wm;
 int timeout_hotspot = 120;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 8 * 3600, 3600000);
+
+const int sleepStartHour = 180;   // 18:00 (6:00 PM)
+const int sleepStartMinute = 0;  // 00 minutes
+const int sleepEndHour = 610;      // 06:00 (6:00 AM)
+const int sleepEndMinute = 10;    // 00 minutes
 
 #define RESTART_PIN 12
 #define LED_PIN_A 13
@@ -17,6 +27,9 @@ bool ledBState = LOW;
 
 unsigned long lastBlinkTime = 0;
 unsigned long blinkInterval = 1000;
+
+unsigned long lastCheckTime = 0; 
+const unsigned long checkInterval = 60000; //3600000 
 
 void setupCompleteCallback() {
   digitalWrite(LED_PIN_A, HIGH);
@@ -38,6 +51,12 @@ void setup() {
   if (res) {
     Serial.println("Terhubung... :)");
     delay(100);
+    timeClient.begin();
+    Serial.println("Mendapatkan waktu... ");
+    delay(2000);
+    timeClient.update();
+    Serial.print("Waktu sekarang: ");
+    Serial.println(timeClient.getFormattedTime());
   } else {
     Serial.println("Gagal mengkoneksikan Wi-Fi");
     delay(100);
